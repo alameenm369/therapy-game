@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dichoptic VR Therapy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #setupScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #setupScreen.hidden {
+            display: none;
+        }
+        .setup-container {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            text-align: center;
+            max-width: 600px;
+        }
+        .setup-container h1 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #00ff00;
+        }
+        .eye-selection {
+            margin: 30px 0;
+        }
+        .eye-selection h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .eye-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .eye-btn {
+            padding: 20px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            background: #333;
+            color: #fff;
+            border: 2px solid #666;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .eye-btn:hover {
+            background: #444;
+            border-color: #00ff00;
+        }
+        .eye-btn.selected {
+            background: #00ff00;
+            color: #000;
+            border-color: #00ff00;
+        }
+        #startBtn {
+            margin-top: 30px;
+            padding: 20px 60px;
+            font-size: 24px;
+            cursor: pointer;
+            background: #0066ff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+        #startBtn:hover {
+            background: #0052cc;
+        }
+        #startBtn:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+        #gameCanvas {
+            display: block;
+            width: 800px;
+            height: 480px;
+            margin: 0;
+            padding: 0;
+        }
+        #stats {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 12px;
+            line-height: 1.3;
+            background: rgba(0,0,0,0.7);
+            padding: 8px;
+            border-radius: 3px;
+            font-weight: normal;
+            color: #00ff00;
+        }
+        #levelComplete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 3px solid #00ff00;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        #sessionComplete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 40px;
+            border-radius: 10px;
+            border: 3px solid #ffaa00;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        .complete-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #00ff00;
+        }
+        .complete-info {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        button.continue-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 20px;
+            cursor: pointer;
+            background: #0066ff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Setup Screen -->
+    <div id="setupScreen">
+        <div class="setup-container">
+            <h1>Dichoptic VR Therapy Setup</h1>
+            <div class="eye-selection">
+                <h2>Select Amblyopic (Lazy) Eye:</h2>
+                <div class="eye-buttons">
+                    <button class="eye-btn" data-eye="left">LEFT EYE</button>
+                    <button class="eye-btn" data-eye="right">RIGHT EYE</button>
+                </div>
+            </div>
+            <button id="startBtn" disabled>START THERAPY</button>
+        </div>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="800" height="480"></canvas>
+
+    <!-- Stats Display -->
+    <div id="stats">
+        <div>Level: <span id="level">1</span> / 10</div>
+        <div>Score: <span id="score">0</span> / <span id="levelTarget">100</span></div>
+        <div>Time: <span id="time">0</span>s</div>
+        <div>Accuracy: <span id="accuracy">0</span>%</div>
+    </div>
+
+    <!-- Level Complete -->
+    <div id="levelComplete">
+        <div class="complete-title">Level Complete!</div>
+        <div class="complete-info">Time: <span id="levelTime">0</span>s</div>
+        <div class="complete-info">Accuracy: <span id="levelAccuracy">0</span>%</div>
+        <button class="continue-btn" onclick="nextLevel()">Continue to Next Level</button>
+    </div>
+
+    <!-- Session Complete -->
+    <div id="sessionComplete">
+        <div class="complete-title" style="color: #ffaa00;">Therapy Session Complete!</div>
+        <div class="complete-info">Total Time: <span id="totalTime">0</span></div>
+        <div class="complete-info">Total Accuracy: <span id="totalAccuracy">0</span>%</div>
+        <div class="complete-info">Levels Completed: 10/10</div>
+        <button class="continue-btn" onclick="location.reload()">New Session</button>
+    </div>
+
+    <script>
+        // Setup Screen Logic
+        let selectedEye = null;
+        const eyeButtons = document.querySelectorAll('.eye-btn');
+        const startBtn = document.getElementById('startBtn');
+        const setupScreen = document.getElementById('setupScreen');
+
+        eyeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                eyeButtons.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedEye = btn.getAttribute('data-eye');
+                startBtn.disabled = false;
+            });
+        });
+
+        startBtn.addEventListener('click', () => {
+            setupScreen.classList.add('hidden');
+            startGame();
+        });
+
+        // Game Variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const CANVAS_WIDTH = 800;
+        const CANVAS_HEIGHT = 480;
+        const EYE_WIDTH = CANVAS_WIDTH / 2;
+
+        let gameState = {
+            running: false,
+            level: 1,
+            score: 0,
+            time: 0,
+            hits: 0,
+            misses: 0,
+            levelStartTime: 0,
+            totalStartTime: 0,
+            amblyopicEye: 'left'
+        };
+
+        // Level Configuration - GRADUAL DIFFICULTY INCREASE
+        const LEVEL_CONFIG = {
+            1: { target: 100, contrast: { lazy: 0.7, healthy: 1.0 }, largeBallSize: 28, smallBallSize: 9, speed: 3.0, spawnRate: 650 },
+            2: { target: 100, contrast: { lazy: 0.65, healthy: 1.0 }, largeBallSize: 27, smallBallSize: 9, speed: 3.3, spawnRate: 600 },
+            3: { target: 100, contrast: { lazy: 0.6, healthy: 1.0 }, largeBallSize: 26, smallBallSize: 9, speed: 3.6, spawnRate: 550 },
+            4: { target: 150, contrast: { lazy: 0.55, healthy: 1.0 }, largeBallSize: 25, smallBallSize: 9, speed: 4.0, spawnRate: 500 },
+            5: { target: 150, contrast: { lazy: 0.5, healthy: 1.0 }, largeBallSize: 24, smallBallSize: 10, speed: 4.4, spawnRate: 450 },
+            6: { target: 150, contrast: { lazy: 0.48, healthy: 1.0 }, largeBallSize: 23, smallBallSize: 10, speed: 4.8, spawnRate: 420 },
+            7: { target: 200, contrast: { lazy: 0.45, healthy: 1.0 }, largeBallSize: 22, smallBallSize: 10, speed: 5.2, spawnRate: 400 },
+            8: { target: 200, contrast: { lazy: 0.42, healthy: 1.0 }, largeBallSize: 21, smallBallSize: 10, speed: 5.6, spawnRate: 380 },
+            9: { target: 200, contrast: { lazy: 0.4, healthy: 1.0 }, largeBallSize: 20, smallBallSize: 11, speed: 6.0, spawnRate: 360 },
+            10: { target: 250, contrast: { lazy: 0.5, healthy: 0.5 }, largeBallSize: 20, smallBallSize: 11, speed: 6.5, spawnRate: 340 }
+        };
+
+        const basket = {
+            x: EYE_WIDTH / 2,
+            y: CANVAS_HEIGHT - 60,
+            width: 65,
+            height: 28,
+            speed: 8
+        };
+
+        const balls = [];
+        const keys = {};
+
+        function getLevelConfig() {
+            return LEVEL_CONFIG[gameState.level];
+        }
+
+        // Create ball - x,y are RELATIVE to single eye view (0-400)
+        function createBall(type) {
+            const config = getLevelConfig();
+            const radius = type === 'large' ? config.largeBallSize : config.smallBallSize;
+            
+            return {
+                x: Math.random() * (EYE_WIDTH - radius * 2) + radius,
+                y: -radius,
+                radius: radius,
+                type: type,
+                speed: config.speed + Math.random() * 1.5,
+                color: type === 'large' ? '#ff0000' : (Math.random() < 0.5 ? '#ff0000' : '#0000ff'),
+                points: type === 'large' ? 10 : -8
+            };
+        }
+
+        function drawBasket(eyeOffset) {
+            const absoluteX = eyeOffset + basket.x;
+            
+            // Draw blue basket outline only
+            ctx.strokeStyle = '#0000ff';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(absoluteX - basket.width/2, basket.y - basket.height/2);
+            ctx.lineTo(absoluteX - basket.width/2, basket.y + basket.height/2);
+            ctx.lineTo(absoluteX + basket.width/2, basket.y + basket.height/2);
+            ctx.lineTo(absoluteX + basket.width/2, basket.y - basket.height/2);
+            ctx.stroke();
+        }
+
+        function drawBall(ball, eyeOffset, isAmblyopicEye) {
+            const config = getLevelConfig();
+            const absoluteX = eyeOffset + ball.x;
+            
+            // CRITICAL: Large balls ONLY visible to amblyopic eye
+            if (ball.type === 'large' && !isAmblyopicEye) {
+                return; // Don't draw large balls on healthy eye
+            }
+            
+            // Set contrast/opacity
+            if (ball.type === 'large') {
+                ctx.globalAlpha = config.contrast.lazy;
+            } else {
+                ctx.globalAlpha = isAmblyopicEye ? config.contrast.lazy : config.contrast.healthy;
+            }
+            
+            ctx.fillStyle = ball.color;
+            ctx.beginPath();
+            ctx.arc(absoluteX, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
+
+        function checkCollision(ball, basketX) {
+            // BALANCED COLLISION: Ball center must be inside, with small tolerance
+            
+            // Check vertical position - ball must be at basket level
+            const ballBottom = ball.y + ball.radius;
+            const ballTop = ball.y - ball.radius;
+            const basketTop = basket.y - basket.height/2;
+            const basketBottom = basket.y + basket.height/2;
+            
+            // Ball must be within vertical range
+            if (ballBottom < basketTop || ballTop > basketBottom) {
+                return false;
+            }
+            
+            // Horizontal check: Ball CENTER must be inside basket, with tolerance
+            const ballCenterX = ball.x;
+            const basketLeft = basketX - basket.width/2;
+            const basketRight = basketX + basket.width/2;
+            
+            // Add small tolerance (70% of radius) - ball can stick out a bit but not too much
+            const tolerance = ball.radius * 0.7;
+            const effectiveLeft = basketLeft + tolerance;
+            const effectiveRight = basketRight - tolerance;
+            
+            // Ball center must be within effective range
+            const caught = (ballCenterX >= effectiveLeft) && (ballCenterX <= effectiveRight);
+            
+            if (caught) {
+                console.log(`✓ CAUGHT! Type: ${ball.type}, Points: ${ball.type === 'large' ? '+10' : '-8'}`);
+            }
+            
+            return caught;
+        }
+
+        function updateBalls() {
+            for (let i = balls.length - 1; i >= 0; i--) {
+                const ball = balls[i];
+                ball.y += ball.speed;
+                
+                // Check collision
+                if (checkCollision(ball, basket.x)) {
+                    const oldScore = gameState.score;
+                    
+                    if (ball.type === 'large') {
+                        gameState.score += 10;
+                        gameState.hits++;
+                        console.log(`🎯 TARGET HIT! +10 points. Score: ${oldScore} → ${gameState.score}`);
+                    } else {
+                        gameState.score = Math.max(0, gameState.score - 8);
+                        gameState.misses++;
+                        console.log(`❌ DISTRACTOR! -8 points. Score: ${oldScore} → ${gameState.score}`);
+                    }
+                    
+                    balls.splice(i, 1);
+                    updateDisplay();
+                    checkLevelComplete();
+                    continue;
+                }
+                
+                if (ball.y > CANVAS_HEIGHT + 50) {
+                    if (ball.type === 'large') {
+                        gameState.misses++;
+                    }
+                    balls.splice(i, 1);
+                }
+            }
+        }
+
+        function updateBasket() {
+            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+                basket.x = Math.max(basket.width/2 + 5, basket.x - basket.speed);
+            }
+            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+                basket.x = Math.min(EYE_WIDTH - basket.width/2 - 5, basket.x + basket.speed);
+            }
+        }
+
+        function checkLevelComplete() {
+            const config = getLevelConfig();
+            if (gameState.score >= config.target) {
+                completeLevel();
+            }
+        }
+
+        function completeLevel() {
+            gameState.running = false;
+            const levelTime = ((Date.now() - gameState.levelStartTime) / 1000).toFixed(1);
+            const accuracy = gameState.hits + gameState.misses > 0 
+                ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
+                : 0;
+            
+            document.getElementById('levelTime').textContent = levelTime;
+            document.getElementById('levelAccuracy').textContent = accuracy;
+            document.getElementById('levelComplete').style.display = 'block';
+        }
+
+        function nextLevel() {
+            document.getElementById('levelComplete').style.display = 'none';
+            
+            if (gameState.level >= 10) {
+                completeSession();
+                return;
+            }
+            
+            gameState.level++;
+            gameState.score = 0;
+            gameState.hits = 0;
+            gameState.misses = 0;
+            gameState.levelStartTime = Date.now();
+            balls.length = 0;
+            lastSpawnTime = Date.now(); // Reset spawn timer
+            gameState.running = true;
+            updateDisplay();
+            
+            // Restart game loop
+            gameLoop();
+        }
+
+        function completeSession() {
+            const totalTime = ((Date.now() - gameState.totalStartTime) / 1000);
+            const minutes = Math.floor(totalTime / 60);
+            const seconds = (totalTime % 60).toFixed(1);
+            const totalAccuracy = gameState.hits + gameState.misses > 0 
+                ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
+                : 0;
+            
+            document.getElementById('totalTime').textContent = `${minutes}m ${seconds}s`;
+            document.getElementById('totalAccuracy').textContent = totalAccuracy;
+            document.getElementById('sessionComplete').style.display = 'block';
+        }
+
+        function updateDisplay() {
+            const config = getLevelConfig();
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('levelTarget').textContent = config.target;
+            document.getElementById('time').textContent = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
+            const accuracy = gameState.hits + gameState.misses > 0 
+                ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
+                : 0;
+            document.getElementById('accuracy').textContent = accuracy;
+        }
+
+        function gameLoop() {
+            if (!gameState.running) return;
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw center divider
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(EYE_WIDTH, 0);
+            ctx.lineTo(EYE_WIDTH, CANVAS_HEIGHT);
+            ctx.stroke();
+            
+            updateBasket();
+            updateBalls();
+            
+            // Draw for LEFT eye (offset 0)
+            const leftIsAmblyopic = (gameState.amblyopicEye === 'left');
+            drawBasket(0);
+            balls.forEach(ball => drawBall(ball, 0, leftIsAmblyopic));
+            
+            // Draw for RIGHT eye (offset EYE_WIDTH)
+            const rightIsAmblyopic = (gameState.amblyopicEye === 'right');
+            drawBasket(EYE_WIDTH);
+            balls.forEach(ball => drawBall(ball, EYE_WIDTH, rightIsAmblyopic));
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Ball spawning
+        let lastSpawnTime = Date.now();
+        function spawnBalls() {
+            if (!gameState.running) {
+                requestAnimationFrame(spawnBalls);
+                return;
+            }
+            
+            const now = Date.now();
+            const config = getLevelConfig();
+            
+            if (now - lastSpawnTime > config.spawnRate) {
+                // Spawn balls with balanced distribution
+                const type = Math.random() < 0.35 ? 'large' : 'small';
+                balls.push(createBall(type));
+                
+                // Sometimes spawn extra balls
+                if (Math.random() < 0.4) {
+                    balls.push(createBall('small'));
+                }
+                
+                lastSpawnTime = now;
+            }
+            
+            requestAnimationFrame(spawnBalls);
+        }
+
+        // Event listeners
+        window.addEventListener('keydown', (e) => { 
+            keys[e.key] = true;
+            e.preventDefault();
+        });
+        window.addEventListener('keyup', (e) => { 
+            keys[e.key] = false;
+            e.preventDefault();
+        });
+
+        // Mouse control
+        canvas.addEventListener('mousemove', (e) => {
+            if (gameState.running) {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                if (mouseX < EYE_WIDTH) {
+                    basket.x = mouseX;
+                }
+            }
+        });
+
+        // Timer update
+        setInterval(() => {
+            if (gameState.running) updateDisplay();
+        }, 100);
+
+        function startGame() {
+            gameState.amblyopicEye = selectedEye;
+            gameState.running = true;
+            gameState.levelStartTime = Date.now();
+            gameState.totalStartTime = Date.now();
+            updateDisplay();
+            gameLoop();
+            spawnBalls();
+        }
+    </script>
+</body>
+</html>
