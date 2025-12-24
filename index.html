@@ -116,7 +116,7 @@
         #stats2 {
             position: absolute;
             top: 5px;
-            left: 405px;
+            left: 400px;
             font-size: 12px;
             line-height: 1.3;
             background: rgba(0,0,0,0.7);
@@ -128,7 +128,7 @@
         #levelComplete {
             position: absolute;
             top: 50%;
-            left: 50%;
+            left: 25%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.95);
             padding: 30px;
@@ -137,25 +137,59 @@
             text-align: center;
             display: none;
             z-index: 100;
+            width: 35%;
+        }
+        #levelComplete2 {
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 3px solid #00ff00;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            width: 35%;
         }
         #sessionComplete {
             position: absolute;
             top: 50%;
-            left: 50%;
+            left: 25%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.98);
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
             border: 3px solid #ffaa00;
             text-align: center;
             display: none;
             z-index: 100;
-            max-width: 700px;
-            width: 90%;
+            max-width: 45%;
+            width: 45%;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        #sessionComplete2 {
+            position: absolute;
+            top: 50%;
+            left: 75%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.98);
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid #ffaa00;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            max-width: 45%;
+            width: 45%;
+            max-height: 95vh;
+            overflow-y: auto;
         }
         .complete-title {
-            font-size: 32px;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 15px;
             color: #00ff00;
         }
         .complete-info {
@@ -163,20 +197,20 @@
             margin: 10px 0;
         }
         .results-table {
-            margin: 20px auto;
+            margin: 15px auto;
             background: #1a1a1a;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             border: 2px solid #00ff00;
         }
         .results-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 15px;
-            margin: 5px 0;
+            padding: 6px 12px;
+            margin: 4px 0;
             background: #2a2a2a;
             border-radius: 4px;
-            font-size: 16px;
+            font-size: 14px;
         }
         .results-label {
             color: #aaa;
@@ -189,28 +223,28 @@
         .level-times-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin: 15px 0;
+            gap: 6px;
+            margin: 10px 0;
         }
         .level-time-box {
             background: #2a2a2a;
-            padding: 8px;
+            padding: 6px;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
         }
         .screenshot-instruction {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 10px;
+            padding: 10px;
             background: #ff6600;
             color: #000;
             font-weight: bold;
             border-radius: 5px;
-            font-size: 18px;
+            font-size: 14px;
         }
         button.continue-btn {
-            margin-top: 20px;
-            padding: 15px 40px;
-            font-size: 20px;
+            margin-top: 15px;
+            padding: 12px 30px;
+            font-size: 18px;
             cursor: pointer;
             background: #0066ff;
             color: #fff;
@@ -271,7 +305,7 @@
         <div>Accuracy: <span id="accuracy2">0</span>%</div>
     </div>
 
-    <!-- Level Complete -->
+    <!-- Level Complete - LEFT SIDE -->
     <div id="levelComplete">
         <div class="complete-title">Level Complete!</div>
         <div class="complete-info">Time: <span id="levelTime">0</span>s</div>
@@ -279,8 +313,19 @@
         <button class="continue-btn" onclick="nextLevel()">Continue to Next Level</button>
     </div>
 
-    <!-- Session Complete -->
+    <!-- Level Complete - RIGHT SIDE -->
+    <div id="levelComplete2">
+        <div class="complete-title">Level Complete!</div>
+        <div class="complete-info">Time: <span id="levelTime2">0</span>s</div>
+        <div class="complete-info">Accuracy: <span id="levelAccuracy2">0</span>%</div>
+        <button class="continue-btn" onclick="nextLevel()">Continue to Next Level</button>
+    </div>
+
+    <!-- Session Complete - LEFT SIDE -->
     <div id="sessionComplete"></div>
+
+    <!-- Session Complete - RIGHT SIDE -->
+    <div id="sessionComplete2"></div>
 
     <script>
         // Setup Screen Logic
@@ -508,13 +553,20 @@
             gameState.levelHits.push(gameState.hits);
             gameState.levelMisses.push(gameState.misses);
             
+            // Update LEFT side
             document.getElementById('levelTime').textContent = levelTime;
             document.getElementById('levelAccuracy').textContent = levelAccuracy;
             document.getElementById('levelComplete').style.display = 'block';
+            
+            // Update RIGHT side
+            document.getElementById('levelTime2').textContent = levelTime;
+            document.getElementById('levelAccuracy2').textContent = levelAccuracy;
+            document.getElementById('levelComplete2').style.display = 'block';
         }
 
         function nextLevel() {
             document.getElementById('levelComplete').style.display = 'none';
+            document.getElementById('levelComplete2').style.display = 'none';
             
             if (gameState.level >= 10) {
                 completeSession();
@@ -544,19 +596,18 @@
             const seconds = (totalTime % 60).toFixed(1);
             
             // Calculate WEIGHTED ACCURACY using difficulty-weighted method
-            // Weight = Level number (Level 1 = weight 1, Level 10 = weight 10)
             let sumWeightedAccuracy = 0;
             let sumWeights = 0;
             
             for (let i = 0; i < gameState.levelAccuracies.length; i++) {
-                const weight = i + 1; // Level 1 = weight 1, Level 2 = weight 2, etc.
+                const weight = i + 1;
                 sumWeightedAccuracy += gameState.levelAccuracies[i] * weight;
                 sumWeights += weight;
             }
             
             const weightedTotalAccuracy = Math.round(sumWeightedAccuracy / sumWeights);
             
-            // Calculate total hits and misses across all levels
+            // Calculate total hits and misses
             const totalHits = gameState.levelHits.reduce((sum, hits) => sum + hits, 0);
             const totalMisses = gameState.levelMisses.reduce((sum, misses) => sum + misses, 0);
             
@@ -565,25 +616,24 @@
             for (let i = 0; i < gameState.levelTimes.length; i++) {
                 levelTimesHTML += `
                     <div class="level-time-box">
-                        <div style="color: #888; font-size: 12px;">L${i+1}</div>
-                        <div style="color: #00ff00; font-weight: bold;">${gameState.levelTimes[i]}s</div>
-                        <div style="color: #ffaa00; font-size: 12px;">Acc: ${gameState.levelAccuracies[i]}%</div>
+                        <div style="color: #888; font-size: 11px;">L${i+1}</div>
+                        <div style="color: #00ff00; font-weight: bold; font-size: 11px;">${gameState.levelTimes[i]}s</div>
+                        <div style="color: #ffaa00; font-size: 10px;">Acc: ${gameState.levelAccuracies[i]}%</div>
                     </div>
                 `;
             }
             levelTimesHTML += '</div>';
             
-            // Build comprehensive results screen
-            document.getElementById('sessionComplete').innerHTML = `
+            // Build results HTML
+            const resultsHTML = `
                 <div class="complete-title">🎯 SESSION COMPLETE! 🎯</div>
                 
                 <div class="screenshot-instruction">
-                    📸 TAKE SCREENSHOT OF THIS SCREEN 📸<br>
-                    Send this screenshot to the researcher
+                    📸 SCREENSHOT THIS SCREEN 📸
                 </div>
                 
                 <div class="results-table">
-                    <h2 style="color: #ffaa00; margin-bottom: 15px;">📊 YOUR RESULTS</h2>
+                    <h2 style="color: #ffaa00; margin-bottom: 10px; font-size: 18px;">📊 YOUR RESULTS</h2>
                     
                     <div class="results-row">
                         <span class="results-label">Eye Selected:</span>
@@ -597,7 +647,7 @@
                     
                     <div class="results-row" style="background: #3a3a00; border: 2px solid #ffaa00;">
                         <span class="results-label">Total Accuracy (Weighted):</span>
-                        <span class="results-value" style="color: #ffaa00; font-size: 20px;">${weightedTotalAccuracy}%</span>
+                        <span class="results-value" style="color: #ffaa00; font-size: 16px;">${weightedTotalAccuracy}%</span>
                     </div>
                     
                     <div class="results-row">
@@ -615,19 +665,17 @@
                         <span class="results-value">10 / 10</span>
                     </div>
                     
-                    <h3 style="color: #00ff00; margin-top: 20px; margin-bottom: 10px;">⏱️ Individual Level Performance:</h3>
                     ${levelTimesHTML}
                 </div>
                 
-                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 28px; padding: 25px 60px; margin-top: 25px; font-weight: bold; border-radius: 10px;">🔄 PLAY AGAIN 🔄</button>
-                
-                <div style="margin-top: 20px; padding: 10px; background: #1a4d1a; border-radius: 5px;">
-                    <strong>Thank you for participating! 🎮</strong><br>
-                    Please screenshot this entire screen and send it.
-                </div>
+                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 20px; padding: 15px 40px; margin-top: 15px; font-weight: bold; border-radius: 8px;">🔄 PLAY AGAIN 🔄</button>
             `;
             
+            // Display on BOTH sides
+            document.getElementById('sessionComplete').innerHTML = resultsHTML;
+            document.getElementById('sessionComplete2').innerHTML = resultsHTML;
             document.getElementById('sessionComplete').style.display = 'block';
+            document.getElementById('sessionComplete2').style.display = 'block';
         }
 
         function updateDisplay() {
