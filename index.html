@@ -301,7 +301,10 @@
             levelStartTime: 0,
             totalStartTime: 0,
             amblyopicEye: 'left',
-            levelTimes: [] // Store time for each level
+            levelTimes: [], // Store time for each level
+            levelAccuracies: [], // Store accuracy for each level
+            levelHits: [], // Store hits per level
+            levelMisses: [] // Store misses per level
         };
 
         // Level Configuration - GRADUAL DIFFICULTY INCREASE
@@ -474,15 +477,19 @@
             gameState.running = false;
             const levelTime = ((Date.now() - gameState.levelStartTime) / 1000).toFixed(1);
             
-            // Store level time
-            gameState.levelTimes.push(parseFloat(levelTime));
-            
-            const accuracy = gameState.hits + gameState.misses > 0 
+            // Calculate and store level accuracy
+            const levelAccuracy = gameState.hits + gameState.misses > 0 
                 ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
                 : 0;
             
+            // Store level data
+            gameState.levelTimes.push(parseFloat(levelTime));
+            gameState.levelAccuracies.push(levelAccuracy);
+            gameState.levelHits.push(gameState.hits);
+            gameState.levelMisses.push(gameState.misses);
+            
             document.getElementById('levelTime').textContent = levelTime;
-            document.getElementById('levelAccuracy').textContent = accuracy;
+            document.getElementById('levelAccuracy').textContent = levelAccuracy;
             document.getElementById('levelComplete').style.display = 'block';
         }
 
@@ -496,8 +503,11 @@
             
             gameState.level++;
             gameState.score = 0;
+            
+            // Reset level-specific counters but keep totals
             gameState.hits = 0;
             gameState.misses = 0;
+            
             gameState.levelStartTime = Date.now();
             balls.length = 0;
             lastSpawnTime = Date.now(); // Reset spawn timer
@@ -512,17 +522,32 @@
             const totalTime = ((Date.now() - gameState.totalStartTime) / 1000);
             const minutes = Math.floor(totalTime / 60);
             const seconds = (totalTime % 60).toFixed(1);
-            const totalAccuracy = gameState.hits + gameState.misses > 0 
-                ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
-                : 0;
             
-            // Build level times HTML
+            // Calculate WEIGHTED ACCURACY using difficulty-weighted method
+            // Weight = Level number (Level 1 = weight 1, Level 10 = weight 10)
+            let sumWeightedAccuracy = 0;
+            let sumWeights = 0;
+            
+            for (let i = 0; i < gameState.levelAccuracies.length; i++) {
+                const weight = i + 1; // Level 1 = weight 1, Level 2 = weight 2, etc.
+                sumWeightedAccuracy += gameState.levelAccuracies[i] * weight;
+                sumWeights += weight;
+            }
+            
+            const weightedTotalAccuracy = Math.round(sumWeightedAccuracy / sumWeights);
+            
+            // Calculate total hits and misses across all levels
+            const totalHits = gameState.levelHits.reduce((sum, hits) => sum + hits, 0);
+            const totalMisses = gameState.levelMisses.reduce((sum, misses) => sum + misses, 0);
+            
+            // Build level times HTML with accuracy
             let levelTimesHTML = '<div class="level-times-grid">';
             for (let i = 0; i < gameState.levelTimes.length; i++) {
                 levelTimesHTML += `
                     <div class="level-time-box">
                         <div style="color: #888; font-size: 12px;">L${i+1}</div>
                         <div style="color: #00ff00; font-weight: bold;">${gameState.levelTimes[i]}s</div>
+                        <div style="color: #ffaa00; font-size: 12px;">Acc: ${gameState.levelAccuracies[i]}%</div>
                     </div>
                 `;
             }
@@ -550,19 +575,19 @@
                         <span class="results-value">${minutes}m ${seconds}s</span>
                     </div>
                     
-                    <div class="results-row">
-                        <span class="results-label">Total Accuracy:</span>
-                        <span class="results-value">${totalAccuracy}%</span>
+                    <div class="results-row" style="background: #3a3a00; border: 2px solid #ffaa00;">
+                        <span class="results-label">Total Accuracy (Weighted):</span>
+                        <span class="results-value" style="color: #ffaa00; font-size: 20px;">${weightedTotalAccuracy}%</span>
                     </div>
                     
                     <div class="results-row">
                         <span class="results-label">Total Hits (Target Balls):</span>
-                        <span class="results-value">${gameState.hits}</span>
+                        <span class="results-value">${totalHits}</span>
                     </div>
                     
                     <div class="results-row">
                         <span class="results-label">Total Misses (Distractor Balls):</span>
-                        <span class="results-value">${gameState.misses}</span>
+                        <span class="results-value">${totalMisses}</span>
                     </div>
                     
                     <div class="results-row">
@@ -570,8 +595,14 @@
                         <span class="results-value">10 / 10</span>
                     </div>
                     
-                    <h3 style="color: #00ff00; margin-top: 20px; margin-bottom: 10px;">⏱️ Individual Level Times:</h3>
+                    <h3 style="color: #00ff00; margin-top: 20px; margin-bottom: 10px;">⏱️ Individual Level Performance:</h3>
                     ${levelTimesHTML}
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: #2a2a00; border-radius: 5px; font-size: 12px; color: #ffaa00;">
+                        <strong>Weighted Accuracy Formula:</strong><br>
+                        Total Accuracy = Σ(Accuracy<sub>i</sub> × Level<sub>i</sub>) ÷ Σ(Level<sub>i</sub>)<br>
+                        Higher levels have more weight due to increased difficulty
+                    </div>
                 </div>
                 
                 <div style="margin-top: 20px; padding: 10px; background: #1a4d1a; border-radius: 5px;">
@@ -579,7 +610,7 @@
                     Please screenshot this entire screen and send it.
                 </div>
                 
-                <button class="continue-btn" onclick="location.reload()">Play Again</button>
+                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 24px; padding: 20px 50px; margin-top: 25px; font-weight: bold;">🔄 PLAY AGAIN 🔄</button>
             `;
             
             document.getElementById('sessionComplete').style.display = 'block';
