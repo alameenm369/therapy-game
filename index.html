@@ -99,6 +99,7 @@
             height: 480px;
             margin: 0;
             padding: 0;
+            touch-action: none;
         }
         #stats {
             position: absolute;
@@ -217,10 +218,11 @@
                     <strong>Instructions:</strong><br>
                     1. Select which eye is weaker (or choose either if both are normal)<br>
                     2. Use Arrow Keys (← →) or A/D keys to move basket<br>
-                    3. Catch LARGE RED balls (+10 points)<br>
-                    4. Avoid small balls (-8 points)<br>
-                    5. Complete all 10 levels<br>
-                    6. Take screenshot of final results screen
+                    3. On mobile: Touch and drag to move basket<br>
+                    4. Catch LARGE RED balls (+10 points)<br>
+                    5. Avoid small balls (-8 points)<br>
+                    6. Complete all 10 levels<br>
+                    7. Take screenshot of final results screen
                 </p>
             </div>
             
@@ -673,6 +675,39 @@
                 }
             }
         });
+
+        // Touch controls for mobile
+        canvas.addEventListener('touchmove', (e) => {
+            if (gameState.running) {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const touchX = touch.clientX - rect.left;
+                
+                // Scale touch X to left eye view (0-400)
+                if (touchX < EYE_WIDTH) {
+                    basket.x = touchX;
+                } else {
+                    // If touching right side, map it to left side coordinates
+                    basket.x = touchX - EYE_WIDTH;
+                }
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (gameState.running) {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const touchX = touch.clientX - rect.left;
+                
+                if (touchX < EYE_WIDTH) {
+                    basket.x = touchX;
+                } else {
+                    basket.x = touchX - EYE_WIDTH;
+                }
+            }
+        }, { passive: false });
 
         // Timer update
         setInterval(() => {
