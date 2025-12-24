@@ -130,13 +130,15 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            padding: 40px;
+            background: rgba(0,0,0,0.98);
+            padding: 30px;
             border-radius: 10px;
             border: 3px solid #ffaa00;
             text-align: center;
             display: none;
             z-index: 100;
+            max-width: 700px;
+            width: 90%;
         }
         .complete-title {
             font-size: 32px;
@@ -146,6 +148,51 @@
         .complete-info {
             font-size: 18px;
             margin: 10px 0;
+        }
+        .results-table {
+            margin: 20px auto;
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #00ff00;
+        }
+        .results-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            margin: 5px 0;
+            background: #2a2a2a;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .results-label {
+            color: #aaa;
+            font-weight: bold;
+        }
+        .results-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .level-times-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .level-time-box {
+            background: #2a2a2a;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .screenshot-instruction {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ff6600;
+            color: #000;
+            font-weight: bold;
+            border-radius: 5px;
+            font-size: 18px;
         }
         button.continue-btn {
             margin-top: 20px;
@@ -164,8 +211,24 @@
     <div id="setupScreen">
         <div class="setup-container">
             <h1>Dichoptic VR Therapy Setup</h1>
+            
+            <div style="background: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <p style="font-size: 14px; line-height: 1.6;">
+                    <strong>Instructions:</strong><br>
+                    1. Select which eye is weaker (or choose either if both are normal)<br>
+                    2. Use Arrow Keys (← →) or A/D keys to move basket<br>
+                    3. Catch LARGE RED balls (+10 points)<br>
+                    4. Avoid small balls (-8 points)<br>
+                    5. Complete all 10 levels<br>
+                    6. Take screenshot of final results screen
+                </p>
+            </div>
+            
             <div class="eye-selection">
                 <h2>Select Amblyopic (Lazy) Eye:</h2>
+                <p style="font-size: 14px; color: #aaa; margin-bottom: 15px;">
+                    If you have normal vision, select either eye
+                </p>
                 <div class="eye-buttons">
                     <button class="eye-btn" data-eye="left">LEFT EYE</button>
                     <button class="eye-btn" data-eye="right">RIGHT EYE</button>
@@ -195,13 +258,7 @@
     </div>
 
     <!-- Session Complete -->
-    <div id="sessionComplete">
-        <div class="complete-title" style="color: #ffaa00;">Therapy Session Complete!</div>
-        <div class="complete-info">Total Time: <span id="totalTime">0</span></div>
-        <div class="complete-info">Total Accuracy: <span id="totalAccuracy">0</span>%</div>
-        <div class="complete-info">Levels Completed: 10/10</div>
-        <button class="continue-btn" onclick="location.reload()">New Session</button>
-    </div>
+    <div id="sessionComplete"></div>
 
     <script>
         // Setup Screen Logic
@@ -241,7 +298,8 @@
             misses: 0,
             levelStartTime: 0,
             totalStartTime: 0,
-            amblyopicEye: 'left'
+            amblyopicEye: 'left',
+            levelTimes: [] // Store time for each level
         };
 
         // Level Configuration - GRADUAL DIFFICULTY INCREASE
@@ -413,6 +471,10 @@
         function completeLevel() {
             gameState.running = false;
             const levelTime = ((Date.now() - gameState.levelStartTime) / 1000).toFixed(1);
+            
+            // Store level time
+            gameState.levelTimes.push(parseFloat(levelTime));
+            
             const accuracy = gameState.hits + gameState.misses > 0 
                 ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
                 : 0;
@@ -452,8 +514,72 @@
                 ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
                 : 0;
             
-            document.getElementById('totalTime').textContent = `${minutes}m ${seconds}s`;
-            document.getElementById('totalAccuracy').textContent = totalAccuracy;
+            // Build level times HTML
+            let levelTimesHTML = '<div class="level-times-grid">';
+            for (let i = 0; i < gameState.levelTimes.length; i++) {
+                levelTimesHTML += `
+                    <div class="level-time-box">
+                        <div style="color: #888; font-size: 12px;">L${i+1}</div>
+                        <div style="color: #00ff00; font-weight: bold;">${gameState.levelTimes[i]}s</div>
+                    </div>
+                `;
+            }
+            levelTimesHTML += '</div>';
+            
+            // Build comprehensive results screen
+            document.getElementById('sessionComplete').innerHTML = `
+                <div class="complete-title">🎯 SESSION COMPLETE! 🎯</div>
+                
+                <div class="screenshot-instruction">
+                    📸 TAKE SCREENSHOT OF THIS SCREEN 📸<br>
+                    Send this screenshot to the researcher
+                </div>
+                
+                <div class="results-table">
+                    <h2 style="color: #ffaa00; margin-bottom: 15px;">📊 YOUR RESULTS</h2>
+                    
+                    <div class="results-row">
+                        <span class="results-label">Eye Selected:</span>
+                        <span class="results-value">${gameState.amblyopicEye.toUpperCase()} EYE</span>
+                    </div>
+                    
+                    <div class="results-row">
+                        <span class="results-label">Total Session Time:</span>
+                        <span class="results-value">${minutes}m ${seconds}s</span>
+                    </div>
+                    
+                    <div class="results-row">
+                        <span class="results-label">Total Accuracy:</span>
+                        <span class="results-value">${totalAccuracy}%</span>
+                    </div>
+                    
+                    <div class="results-row">
+                        <span class="results-label">Total Hits (Target Balls):</span>
+                        <span class="results-value">${gameState.hits}</span>
+                    </div>
+                    
+                    <div class="results-row">
+                        <span class="results-label">Total Misses (Distractor Balls):</span>
+                        <span class="results-value">${gameState.misses}</span>
+                    </div>
+                    
+                    <div class="results-row">
+                        <span class="results-label">Levels Completed:</span>
+                        <span class="results-value">10 / 10</span>
+                    </div>
+                    
+                    <h3 style="color: #00ff00; margin-top: 20px; margin-bottom: 10px;">⏱️ Individual Level Times:</h3>
+                    ${levelTimesHTML}
+                </div>
+                
+                <div style="margin-top: 20px; padding: 10px; background: #1a4d1a; border-radius: 5px;">
+                    <strong>Thank you for participating! 🎮</strong><br>
+                    Please screenshot this entire screen and send it.
+                </div>
+                
+                <button class="continue-btn" onclick="location.reload()">Play Again</button>
+            `;
+            
             document.getElementById('sessionComplete').style.display = 'block';
         }
 
