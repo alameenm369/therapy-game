@@ -113,6 +113,18 @@
             font-weight: normal;
             color: #00ff00;
         }
+        #stats2 {
+            position: absolute;
+            top: 5px;
+            left: 405px;
+            font-size: 12px;
+            line-height: 1.3;
+            background: rgba(0,0,0,0.7);
+            padding: 8px;
+            border-radius: 3px;
+            font-weight: normal;
+            color: #00ff00;
+        }
         #levelComplete {
             position: absolute;
             top: 50%;
@@ -243,12 +255,20 @@
     <!-- Game Canvas -->
     <canvas id="gameCanvas" width="800" height="480"></canvas>
 
-    <!-- Stats Display -->
+    <!-- Stats Display - LEFT SIDE -->
     <div id="stats">
         <div>Level: <span id="level">1</span> / 10</div>
         <div>Score: <span id="score">0</span> / <span id="levelTarget">100</span></div>
         <div>Time: <span id="time">0</span>s</div>
         <div>Accuracy: <span id="accuracy">0</span>%</div>
+    </div>
+
+    <!-- Stats Display - RIGHT SIDE -->
+    <div id="stats2">
+        <div>Level: <span id="level2">1</span> / 10</div>
+        <div>Score: <span id="score2">0</span> / <span id="levelTarget2">100</span></div>
+        <div>Time: <span id="time2">0</span>s</div>
+        <div>Accuracy: <span id="accuracy2">0</span>%</div>
     </div>
 
     <!-- Level Complete -->
@@ -597,20 +617,14 @@
                     
                     <h3 style="color: #00ff00; margin-top: 20px; margin-bottom: 10px;">⏱️ Individual Level Performance:</h3>
                     ${levelTimesHTML}
-                    
-                    <div style="margin-top: 15px; padding: 10px; background: #2a2a00; border-radius: 5px; font-size: 12px; color: #ffaa00;">
-                        <strong>Weighted Accuracy Formula:</strong><br>
-                        Total Accuracy = Σ(Accuracy<sub>i</sub> × Level<sub>i</sub>) ÷ Σ(Level<sub>i</sub>)<br>
-                        Higher levels have more weight due to increased difficulty
-                    </div>
                 </div>
+                
+                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 28px; padding: 25px 60px; margin-top: 25px; font-weight: bold; border-radius: 10px;">🔄 PLAY AGAIN 🔄</button>
                 
                 <div style="margin-top: 20px; padding: 10px; background: #1a4d1a; border-radius: 5px;">
                     <strong>Thank you for participating! 🎮</strong><br>
                     Please screenshot this entire screen and send it.
                 </div>
-                
-                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 24px; padding: 20px 50px; margin-top: 25px; font-weight: bold;">🔄 PLAY AGAIN 🔄</button>
             `;
             
             document.getElementById('sessionComplete').style.display = 'block';
@@ -618,14 +632,27 @@
 
         function updateDisplay() {
             const config = getLevelConfig();
-            document.getElementById('level').textContent = gameState.level;
-            document.getElementById('score').textContent = gameState.score;
-            document.getElementById('levelTarget').textContent = config.target;
-            document.getElementById('time').textContent = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
+            const levelValue = gameState.level;
+            const scoreValue = gameState.score;
+            const targetValue = config.target;
+            const timeValue = Math.floor((Date.now() - gameState.levelStartTime) / 1000);
             const accuracy = gameState.hits + gameState.misses > 0 
                 ? Math.round((gameState.hits / (gameState.hits + gameState.misses)) * 100) 
                 : 0;
+            
+            // Update LEFT side stats
+            document.getElementById('level').textContent = levelValue;
+            document.getElementById('score').textContent = scoreValue;
+            document.getElementById('levelTarget').textContent = targetValue;
+            document.getElementById('time').textContent = timeValue;
             document.getElementById('accuracy').textContent = accuracy;
+            
+            // Update RIGHT side stats (same values)
+            document.getElementById('level2').textContent = levelValue;
+            document.getElementById('score2').textContent = scoreValue;
+            document.getElementById('levelTarget2').textContent = targetValue;
+            document.getElementById('time2').textContent = timeValue;
+            document.getElementById('accuracy2').textContent = accuracy;
         }
 
         function gameLoop() {
