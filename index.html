@@ -17,8 +17,17 @@
             overflow: hidden;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             width: 100vw;
             height: 100vh;
+        }
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 480px;
+            margin: 0 auto;
         }
         #setupScreen {
             position: fixed;
@@ -99,17 +108,21 @@
         }
         #gameCanvas {
             display: block;
-            width: 100%;
-            max-width: 800px;
-            height: auto;
-            margin: 0 auto;
+            width: 800px;
+            height: 480px;
+            margin: 0;
             padding: 0;
             touch-action: none;
         }
         @media (max-width: 800px) {
-            #gameCanvas {
+            #gameContainer {
                 width: 100vw;
-                height: calc(100vw * 0.6);
+                height: 60vw;
+                max-height: 100vh;
+            }
+            #gameCanvas {
+                width: 100%;
+                height: 100%;
             }
         }
         #stats {
@@ -142,89 +155,87 @@
         #levelComplete {
             position: absolute;
             top: 50%;
-            left: 25%;
-            transform: translate(-50%, -50%);
+            left: 100px;
+            transform: translate(0, -50%);
             background: rgba(0,0,0,0.95);
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
             border: 3px solid #00ff00;
             text-align: center;
             display: none;
             z-index: 100;
-            width: 35%;
+            width: 200px;
         }
         #levelComplete2 {
             position: absolute;
             top: 50%;
-            left: 75%;
-            transform: translate(-50%, -50%);
+            left: 500px;
+            transform: translate(0, -50%);
             background: rgba(0,0,0,0.95);
-            padding: 30px;
+            padding: 20px;
             border-radius: 10px;
             border: 3px solid #00ff00;
             text-align: center;
             display: none;
             z-index: 100;
-            width: 35%;
+            width: 200px;
         }
         #sessionComplete {
-            position: fixed;
+            position: absolute;
             top: 50%;
-            left: 25%;
-            transform: translate(-50%, -50%);
+            left: 25px;
+            transform: translate(0, -50%);
             background: rgba(0,0,0,0.98);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             border: 3px solid #ffaa00;
             text-align: center;
             display: none;
             z-index: 100;
-            max-width: 45%;
-            width: 45%;
-            max-height: 90vh;
+            width: 350px;
+            max-height: 460px;
             overflow-y: auto;
         }
         #sessionComplete2 {
-            position: fixed;
+            position: absolute;
             top: 50%;
-            left: 75%;
-            transform: translate(-50%, -50%);
+            left: 425px;
+            transform: translate(0, -50%);
             background: rgba(0,0,0,0.98);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             border: 3px solid #ffaa00;
             text-align: center;
             display: none;
             z-index: 100;
-            max-width: 45%;
-            width: 45%;
-            max-height: 90vh;
+            width: 350px;
+            max-height: 460px;
             overflow-y: auto;
         }
         .complete-title {
-            font-size: 20px;
-            margin-bottom: 10px;
+            font-size: 18px;
+            margin-bottom: 8px;
             color: #00ff00;
         }
         .complete-info {
-            font-size: 18px;
-            margin: 10px 0;
+            font-size: 16px;
+            margin: 8px 0;
         }
         .results-table {
-            margin: 10px auto;
+            margin: 8px auto;
             background: #1a1a1a;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             border: 2px solid #00ff00;
         }
         .results-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 10px;
-            margin: 3px 0;
+            padding: 4px 8px;
+            margin: 2px 0;
             background: #2a2a2a;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 3px;
+            font-size: 11px;
         }
         .results-label {
             color: #aaa;
@@ -237,14 +248,14 @@
         .level-times-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-            margin: 8px 0;
+            gap: 3px;
+            margin: 6px 0;
         }
         .level-time-box {
             background: #2a2a2a;
-            padding: 4px;
-            border-radius: 4px;
-            font-size: 10px;
+            padding: 3px;
+            border-radius: 3px;
+            font-size: 9px;
         }
         .screenshot-instruction {
             margin-top: 10px;
@@ -257,9 +268,9 @@
             display: none;
         }
         button.continue-btn {
-            margin-top: 10px;
-            padding: 10px 25px;
-            font-size: 16px;
+            margin-top: 8px;
+            padding: 8px 20px;
+            font-size: 14px;
             cursor: pointer;
             background: #0066ff;
             color: #fff;
@@ -267,21 +278,20 @@
             border-radius: 5px;
         }
         .control-buttons {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            position: absolute;
+            top: 10px;
+            right: 10px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             z-index: 60;
         }
         .control-btn {
-            padding: 12px 25px;
-            font-size: 18px;
+            padding: 8px 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             color: #fff;
         }
         .pause-btn {
@@ -291,11 +301,11 @@
             background: #cc0000;
         }
         #pauseOverlay {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 800px;
+            height: 480px;
             background: rgba(0,0,0,0.8);
             display: none;
             z-index: 55;
@@ -335,17 +345,19 @@
         </div>
     </div>
 
-    <!-- Game Canvas -->
-    <canvas id="gameCanvas" width="800" height="480"></canvas>
+    <!-- Game Container -->
+    <div id="gameContainer">
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas" width="800" height="480"></canvas>
 
-    <!-- Pause Overlay -->
-    <div id="pauseOverlay"></div>
+        <!-- Pause Overlay -->
+        <div id="pauseOverlay"></div>
 
-    <!-- Control Buttons (Pause & Restart) -->
-    <div class="control-buttons" id="controlButtons" style="display: none;">
-        <button class="control-btn pause-btn" onclick="togglePause()">⏸️ PAUSE</button>
-        <button class="control-btn restart-btn" onclick="restartGame()">🔄 RESTART</button>
-    </div>
+        <!-- Control Buttons (Pause & Restart) -->
+        <div class="control-buttons" id="controlButtons" style="display: none;">
+            <button class="control-btn pause-btn" onclick="togglePause()">⏸️ PAUSE</button>
+            <button class="control-btn restart-btn" onclick="restartGame()">🔄 RESTART</button>
+        </div>
 
     <!-- Stats Display - LEFT SIDE -->
     <div id="stats">
@@ -384,6 +396,7 @@
 
     <!-- Session Complete - RIGHT SIDE -->
     <div id="sessionComplete2"></div>
+    </div>
 
     <script>
         // Setup Screen Logic
@@ -699,9 +712,9 @@
             for (let i = 0; i < gameState.levelTimes.length; i++) {
                 levelTimesHTML += `
                     <div class="level-time-box">
-                        <div style="color: #888; font-size: 11px;">L${i+1}</div>
-                        <div style="color: #00ff00; font-weight: bold; font-size: 11px;">${gameState.levelTimes[i]}s</div>
-                        <div style="color: #ffaa00; font-size: 10px;">Acc: ${gameState.levelAccuracies[i]}%</div>
+                        <div style="color: #888; font-size: 8px;">L${i+1}</div>
+                        <div style="color: #00ff00; font-weight: bold; font-size: 9px;">${gameState.levelTimes[i]}s</div>
+                        <div style="color: #ffaa00; font-size: 8px;">Acc: ${gameState.levelAccuracies[i]}%</div>
                     </div>
                 `;
             }
@@ -712,7 +725,7 @@
                 <div class="complete-title">🎯 SESSION COMPLETE! 🎯</div>
                 
                 <div class="results-table">
-                    <h2 style="color: #ffaa00; margin-bottom: 8px; font-size: 16px;">📊 YOUR RESULTS</h2>
+                    <h2 style="color: #ffaa00; margin-bottom: 6px; font-size: 14px;">📊 YOUR RESULTS</h2>
                     
                     <div class="results-row">
                         <span class="results-label">Eye Selected:</span>
@@ -720,22 +733,22 @@
                     </div>
                     
                     <div class="results-row">
-                        <span class="results-label">Total Session Time:</span>
+                        <span class="results-label">Total Time:</span>
                         <span class="results-value">${minutes}m ${seconds}s</span>
                     </div>
                     
                     <div class="results-row" style="background: #3a3a00; border: 2px solid #ffaa00;">
-                        <span class="results-label">Total Accuracy (Weighted):</span>
-                        <span class="results-value" style="color: #ffaa00; font-size: 14px;">${weightedTotalAccuracy}%</span>
+                        <span class="results-label">Total Accuracy:</span>
+                        <span class="results-value" style="color: #ffaa00; font-size: 12px;">${weightedTotalAccuracy}%</span>
                     </div>
                     
                     <div class="results-row">
-                        <span class="results-label">Total Hits (Target Balls):</span>
+                        <span class="results-label">Total Hits:</span>
                         <span class="results-value">${totalHits}</span>
                     </div>
                     
                     <div class="results-row">
-                        <span class="results-label">Total Misses (Distractor Balls):</span>
+                        <span class="results-label">Total Misses:</span>
                         <span class="results-value">${totalMisses}</span>
                     </div>
                     
@@ -747,7 +760,7 @@
                     ${levelTimesHTML}
                 </div>
                 
-                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 18px; padding: 12px 35px; margin-top: 10px; font-weight: bold; border-radius: 8px;">🔄 PLAY AGAIN 🔄</button>
+                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 16px; padding: 10px 30px; margin-top: 8px; font-weight: bold; border-radius: 6px;">🔄 PLAY AGAIN 🔄</button>
             `;
             
             // Display on BOTH sides
