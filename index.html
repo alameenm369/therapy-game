@@ -15,6 +15,10 @@
             color: #fff;
             font-family: Arial, sans-serif;
             overflow: hidden;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
         }
         #setupScreen {
             position: fixed;
@@ -95,35 +99,45 @@
         }
         #gameCanvas {
             display: block;
-            width: 800px;
-            height: 480px;
-            margin: 0;
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            margin: 0 auto;
             padding: 0;
             touch-action: none;
         }
+        @media (max-width: 800px) {
+            #gameCanvas {
+                width: 100vw;
+                height: calc(100vw * 0.6);
+            }
+        }
         #stats {
-            position: absolute;
+            position: fixed;
             top: 5px;
             left: 5px;
-            font-size: 12px;
+            font-size: 11px;
             line-height: 1.3;
             background: rgba(0,0,0,0.7);
-            padding: 8px;
+            padding: 6px;
             border-radius: 3px;
             font-weight: normal;
             color: #00ff00;
+            z-index: 50;
         }
         #stats2 {
-            position: absolute;
+            position: fixed;
             top: 5px;
-            left: 400px;
-            font-size: 12px;
+            left: 50%;
+            margin-left: 5px;
+            font-size: 11px;
             line-height: 1.3;
             background: rgba(0,0,0,0.7);
-            padding: 8px;
+            padding: 6px;
             border-radius: 3px;
             font-weight: normal;
             color: #00ff00;
+            z-index: 50;
         }
         #levelComplete {
             position: absolute;
@@ -154,12 +168,12 @@
             width: 35%;
         }
         #sessionComplete {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 25%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.98);
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             border: 3px solid #ffaa00;
             text-align: center;
@@ -167,16 +181,16 @@
             z-index: 100;
             max-width: 45%;
             width: 45%;
-            max-height: 95vh;
+            max-height: 90vh;
             overflow-y: auto;
         }
         #sessionComplete2 {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 75%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.98);
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             border: 3px solid #ffaa00;
             text-align: center;
@@ -184,12 +198,12 @@
             z-index: 100;
             max-width: 45%;
             width: 45%;
-            max-height: 95vh;
+            max-height: 90vh;
             overflow-y: auto;
         }
         .complete-title {
-            font-size: 24px;
-            margin-bottom: 15px;
+            font-size: 20px;
+            margin-bottom: 10px;
             color: #00ff00;
         }
         .complete-info {
@@ -197,20 +211,20 @@
             margin: 10px 0;
         }
         .results-table {
-            margin: 15px auto;
+            margin: 10px auto;
             background: #1a1a1a;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             border: 2px solid #00ff00;
         }
         .results-row {
             display: flex;
             justify-content: space-between;
-            padding: 6px 12px;
-            margin: 4px 0;
+            padding: 5px 10px;
+            margin: 3px 0;
             background: #2a2a2a;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
         }
         .results-label {
             color: #aaa;
@@ -223,14 +237,14 @@
         .level-times-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            margin: 10px 0;
+            gap: 4px;
+            margin: 8px 0;
         }
         .level-time-box {
             background: #2a2a2a;
-            padding: 6px;
+            padding: 4px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 10px;
         }
         .screenshot-instruction {
             margin-top: 10px;
@@ -240,16 +254,51 @@
             font-weight: bold;
             border-radius: 5px;
             font-size: 14px;
+            display: none;
         }
         button.continue-btn {
-            margin-top: 15px;
-            padding: 12px 30px;
-            font-size: 18px;
+            margin-top: 10px;
+            padding: 10px 25px;
+            font-size: 16px;
             cursor: pointer;
             background: #0066ff;
             color: #fff;
             border: none;
             border-radius: 5px;
+        }
+        .control-buttons {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 15px;
+            z-index: 60;
+        }
+        .control-btn {
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+        }
+        .pause-btn {
+            background: #ff6600;
+        }
+        .restart-btn {
+            background: #cc0000;
+        }
+        #pauseOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            z-index: 55;
         }
     </style>
 </head>
@@ -288,6 +337,15 @@
 
     <!-- Game Canvas -->
     <canvas id="gameCanvas" width="800" height="480"></canvas>
+
+    <!-- Pause Overlay -->
+    <div id="pauseOverlay"></div>
+
+    <!-- Control Buttons (Pause & Restart) -->
+    <div class="control-buttons" id="controlButtons" style="display: none;">
+        <button class="control-btn pause-btn" onclick="togglePause()">⏸️ PAUSE</button>
+        <button class="control-btn restart-btn" onclick="restartGame()">🔄 RESTART</button>
+    </div>
 
     <!-- Stats Display - LEFT SIDE -->
     <div id="stats">
@@ -358,6 +416,7 @@
 
         let gameState = {
             running: false,
+            paused: false,
             level: 1,
             score: 0,
             time: 0,
@@ -488,7 +547,29 @@
             return caught;
         }
 
+        function togglePause() {
+            gameState.paused = !gameState.paused;
+            const pauseBtn = document.querySelector('.pause-btn');
+            const pauseOverlay = document.getElementById('pauseOverlay');
+            
+            if (gameState.paused) {
+                pauseBtn.textContent = '▶️ RESUME';
+                pauseOverlay.style.display = 'block';
+            } else {
+                pauseBtn.textContent = '⏸️ PAUSE';
+                pauseOverlay.style.display = 'none';
+            }
+        }
+
+        function restartGame() {
+            if (confirm('Are you sure you want to restart from Level 1? All progress will be lost.')) {
+                location.reload();
+            }
+        }
+
         function updateBalls() {
+            if (gameState.paused) return;
+            
             for (let i = balls.length - 1; i >= 0; i--) {
                 const ball = balls[i];
                 ball.y += ball.speed;
@@ -523,6 +604,8 @@
         }
 
         function updateBasket() {
+            if (gameState.paused) return;
+            
             if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
                 basket.x = Math.max(basket.width/2 + 5, basket.x - basket.speed);
             }
@@ -628,12 +711,8 @@
             const resultsHTML = `
                 <div class="complete-title">🎯 SESSION COMPLETE! 🎯</div>
                 
-                <div class="screenshot-instruction">
-                    📸 SCREENSHOT THIS SCREEN 📸
-                </div>
-                
                 <div class="results-table">
-                    <h2 style="color: #ffaa00; margin-bottom: 10px; font-size: 18px;">📊 YOUR RESULTS</h2>
+                    <h2 style="color: #ffaa00; margin-bottom: 8px; font-size: 16px;">📊 YOUR RESULTS</h2>
                     
                     <div class="results-row">
                         <span class="results-label">Eye Selected:</span>
@@ -647,7 +726,7 @@
                     
                     <div class="results-row" style="background: #3a3a00; border: 2px solid #ffaa00;">
                         <span class="results-label">Total Accuracy (Weighted):</span>
-                        <span class="results-value" style="color: #ffaa00; font-size: 16px;">${weightedTotalAccuracy}%</span>
+                        <span class="results-value" style="color: #ffaa00; font-size: 14px;">${weightedTotalAccuracy}%</span>
                     </div>
                     
                     <div class="results-row">
@@ -668,7 +747,7 @@
                     ${levelTimesHTML}
                 </div>
                 
-                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 20px; padding: 15px 40px; margin-top: 15px; font-weight: bold; border-radius: 8px;">🔄 PLAY AGAIN 🔄</button>
+                <button class="continue-btn" onclick="location.reload()" style="background: #00cc00; font-size: 18px; padding: 12px 35px; margin-top: 10px; font-weight: bold; border-radius: 8px;">🔄 PLAY AGAIN 🔄</button>
             `;
             
             // Display on BOTH sides
@@ -742,6 +821,11 @@
                 return;
             }
             
+            if (gameState.paused) {
+                requestAnimationFrame(spawnBalls);
+                return;
+            }
+            
             const now = Date.now();
             const config = getLevelConfig();
             
@@ -773,59 +857,71 @@
 
         // Mouse control
         canvas.addEventListener('mousemove', (e) => {
-            if (gameState.running) {
+            if (gameState.running && !gameState.paused) {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
-                if (mouseX < EYE_WIDTH) {
-                    basket.x = mouseX;
+                const canvasWidth = rect.width;
+                const scaledX = (mouseX / canvasWidth) * CANVAS_WIDTH;
+                
+                if (scaledX < EYE_WIDTH) {
+                    basket.x = scaledX;
                 }
             }
         });
 
         // Touch controls for mobile
         canvas.addEventListener('touchmove', (e) => {
-            if (gameState.running) {
+            if (gameState.running && !gameState.paused) {
                 e.preventDefault();
                 const rect = canvas.getBoundingClientRect();
                 const touch = e.touches[0];
                 const touchX = touch.clientX - rect.left;
+                const canvasWidth = rect.width;
+                const scaledX = (touchX / canvasWidth) * CANVAS_WIDTH;
                 
                 // Scale touch X to left eye view (0-400)
-                if (touchX < EYE_WIDTH) {
-                    basket.x = touchX;
+                if (scaledX < EYE_WIDTH) {
+                    basket.x = scaledX;
                 } else {
                     // If touching right side, map it to left side coordinates
-                    basket.x = touchX - EYE_WIDTH;
+                    basket.x = scaledX - EYE_WIDTH;
                 }
             }
         }, { passive: false });
 
         canvas.addEventListener('touchstart', (e) => {
-            if (gameState.running) {
+            if (gameState.running && !gameState.paused) {
                 e.preventDefault();
                 const rect = canvas.getBoundingClientRect();
                 const touch = e.touches[0];
                 const touchX = touch.clientX - rect.left;
+                const canvasWidth = rect.width;
+                const scaledX = (touchX / canvasWidth) * CANVAS_WIDTH;
                 
-                if (touchX < EYE_WIDTH) {
-                    basket.x = touchX;
+                if (scaledX < EYE_WIDTH) {
+                    basket.x = scaledX;
                 } else {
-                    basket.x = touchX - EYE_WIDTH;
+                    basket.x = scaledX - EYE_WIDTH;
                 }
             }
         }, { passive: false });
 
         // Timer update
         setInterval(() => {
-            if (gameState.running) updateDisplay();
+            if (gameState.running && !gameState.paused) updateDisplay();
         }, 100);
 
         function startGame() {
             gameState.amblyopicEye = selectedEye;
             gameState.running = true;
+            gameState.paused = false;
             gameState.levelStartTime = Date.now();
             gameState.totalStartTime = Date.now();
             updateDisplay();
+            
+            // Show control buttons
+            document.getElementById('controlButtons').style.display = 'flex';
+            
             gameLoop();
             spawnBalls();
         }
